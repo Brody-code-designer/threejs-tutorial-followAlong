@@ -1,34 +1,34 @@
 function init() {
     var scene = new THREE.Scene();
-    var gui = new dat.GUI()
+    var gui = new dat.GUI();
 
-    var enableFog = false
+    var enableFog = false;
 
     if (enableFog) {
-        scene.fog = new THREE.FogExp2(0xffffff, 0.2)
+        scene.fog = new THREE.FogExp2(0xffffff, 0.2);
     }
 
-
     var plane = getPlane(30);
-    var pointLight = getPointLight(1);
-    var sphere = getSphere(0.05)
-    var boxGrid = getBoxGrid(10, 1.5)
+    var spotLight = getSpotLight(1);
+    var sphere = getSphere(0.05);
+    var boxGrid = getBoxGrid(10, 1.5);
 
     plane.name = 'plane-1';
 
-
     plane.rotation.x = Math.PI/2;
-    pointLight.position.y = 2
-    pointLight.intensity = 2
-
+    spotLight.position.y = 4;
+    spotLight.intensity = 2;
 
     scene.add(plane);
-    pointLight.add(sphere)
-    scene.add(pointLight)
-    scene.add(boxGrid)
+    spotLight.add(sphere);
+    scene.add(spotLight);
+    scene.add(boxGrid);
 
-    gui.add(pointLight, 'intensity', 0, 10)
-    gui.add(pointLight.position, 'y', 0, 5)
+    gui.add(spotLight, 'intensity', 0, 10);
+    gui.add(spotLight.position, 'x', 0, 20);
+    gui.add(spotLight.position, 'y', 0, 20);
+    gui.add(spotLight.position, 'z', 0, 20);
+    gui.add(spotLight, 'penumbra', 0, 1);
 
     var camera = new THREE.PerspectiveCamera(
         45,
@@ -44,12 +44,12 @@ function init() {
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     var renderer = new THREE.WebGLRenderer();
-    renderer.shadowMap.enabled = true
+    renderer.shadowMap.enabled = true;
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor('rgb(120, 120, 120)')
+    renderer.setClearColor('rgb(120, 120, 120)');
     document.getElementById('webgl').appendChild(renderer.domElement);
 
-    var controls = new THREE.OrbitControls(camera, renderer.domElement)
+    var controls = new THREE.OrbitControls(camera, renderer.domElement);
 
     update(renderer, scene, camera, controls);
 
@@ -65,7 +65,7 @@ function getBox(w, h, d) {
         geometry,
         material
     );
-    mesh.castShadow = true
+    mesh.castShadow = true;
 
     return mesh;
 }
@@ -93,7 +93,6 @@ function getBoxGrid(amount, separationMultiplier) {
     return group;
 }
 
-
 function getPlane(size) {
     var geometry = new THREE.PlaneGeometry(size, size);
     var material = new THREE.MeshPhongMaterial({
@@ -104,11 +103,10 @@ function getPlane(size) {
         geometry,
         material
     );
-    mesh.receiveShadow = true
+    mesh.receiveShadow = true;
 
     return mesh;
 }
-
 
 function getSphere(size) {
     var geometry = new THREE.SphereGeometry(size, 24, 24);
@@ -124,10 +122,21 @@ function getSphere(size) {
 }
 
 function getPointLight(intensity) {
-    var light = new THREE.PointLight(0xffffff, intensity)
-    light.castShadow = true
+    var light = new THREE.PointLight(0xffffff, intensity);
+    light.castShadow = true;
 
-    return light
+    return light;
+}
+
+function getSpotLight(intensity) {
+    var light = new THREE.SpotLight(0xffffff, intensity);
+    light.castShadow = true;
+
+    light.shadow.bias = 0.001;
+    light.shadow.mapSize.width = 2048;
+    light.shadow.mapSize.height = 2048;
+
+    return light;
 }
 
 function update(renderer, scene, camera, controls) {
@@ -136,7 +145,7 @@ function update(renderer, scene, camera, controls) {
         camera
     );
 
-    controls.update()
+    controls.update();
 
     requestAnimationFrame(function() {
         update(renderer, scene, camera, controls);
