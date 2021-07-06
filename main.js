@@ -9,26 +9,32 @@ function init() {
     }
 
     var plane = getPlane(30);
-    var spotLight = getSpotLight(1);
+    var directionalLight = getSpotLight(1);
     var sphere = getSphere(0.05);
     var boxGrid = getBoxGrid(10, 1.5);
+    var helper = new THREE.CameraHelper(directionalLight.shadow.camera);
+    var ambientLight = getAmbientLight(10)
 
     plane.name = 'plane-1';
 
     plane.rotation.x = Math.PI/2;
-    spotLight.position.y = 4;
-    spotLight.intensity = 2;
+    directionalLight.position.x = 13;
+    directionalLight.position.y = 10;
+    directionalLight.position.z = 10;
+    directionalLight.intensity = 2;
 
     scene.add(plane);
-    spotLight.add(sphere);
-    scene.add(spotLight);
+    directionalLight.add(sphere);
+    scene.add(directionalLight);
     scene.add(boxGrid);
+    scene.add(helper);
+    scene.add(ambientLight)
 
-    gui.add(spotLight, 'intensity', 0, 10);
-    gui.add(spotLight.position, 'x', 0, 20);
-    gui.add(spotLight.position, 'y', 0, 20);
-    gui.add(spotLight.position, 'z', 0, 20);
-    gui.add(spotLight, 'penumbra', 0, 1);
+    gui.add(directionalLight, 'intensity', 0, 10);
+    gui.add(directionalLight.position, 'x', 0, 20);
+    gui.add(directionalLight.position, 'y', 0, 20);
+    gui.add(directionalLight.position, 'z', 0, 20);
+
 
     var camera = new THREE.PerspectiveCamera(
         45,
@@ -135,6 +141,24 @@ function getSpotLight(intensity) {
     light.shadow.bias = 0.001;
     light.shadow.mapSize.width = 2048;
     light.shadow.mapSize.height = 2048;
+
+    return light;
+}
+
+function getDirectionalLight(intensity) {
+    var light = new THREE.DirectionalLight(0xffffff, intensity);
+    light.castShadow = true;
+
+    light.castShadow.camera.left = -10;
+    light.castShadow.camera.bottom = -10;
+    light.castShadow.camera.right = 10;
+    light.castShadow.camera.top = 10;
+
+    return light;
+}
+
+function getAmbientLight(intensity) {
+    var light = new THREE.DirectionalLight('rgb(10, 30, 50)', intensity);
 
     return light;
 }
