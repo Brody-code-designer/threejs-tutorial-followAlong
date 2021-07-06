@@ -1,6 +1,7 @@
 function init() {
     var scene = new THREE.Scene();
     var gui = new dat.GUI();
+    var clock = new THREE.Clock();
 
     var enableFog = false;
 
@@ -9,13 +10,12 @@ function init() {
     }
 
     var plane = getPlane(30);
-    var directionalLight = getSpotLight(1);
+    var directionalLight = getDirectionalLight(1);
     var sphere = getSphere(0.05);
     var boxGrid = getBoxGrid(10, 1.5);
-    var helper = new THREE.CameraHelper(directionalLight.shadow.camera);
-    var ambientLight = getAmbientLight(10)
 
     plane.name = 'plane-1';
+    boxGrid.name = 'boxGrid'
 
     plane.rotation.x = Math.PI/2;
     directionalLight.position.x = 13;
@@ -27,14 +27,11 @@ function init() {
     directionalLight.add(sphere);
     scene.add(directionalLight);
     scene.add(boxGrid);
-    scene.add(helper);
-    scene.add(ambientLight)
 
     gui.add(directionalLight, 'intensity', 0, 10);
     gui.add(directionalLight.position, 'x', 0, 20);
     gui.add(directionalLight.position, 'y', 0, 20);
     gui.add(directionalLight.position, 'z', 0, 20);
-
 
     var camera = new THREE.PerspectiveCamera(
         45,
@@ -43,9 +40,9 @@ function init() {
         1000
     );
 
-    camera.position.x = 1;
-    camera.position.y = 2;
-    camera.position.z = 5;
+    camera.position.x = 10;
+    camera.position.y = 18;
+    camera.position.z = -18;
 
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
@@ -57,7 +54,7 @@ function init() {
 
     var controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-    update(renderer, scene, camera, controls);
+    update(renderer, scene, camera, controls, clock);
 
     return scene;
 }
@@ -149,21 +146,15 @@ function getDirectionalLight(intensity) {
     var light = new THREE.DirectionalLight(0xffffff, intensity);
     light.castShadow = true;
 
-    light.castShadow.camera.left = -10;
-    light.castShadow.camera.bottom = -10;
-    light.castShadow.camera.right = 10;
-    light.castShadow.camera.top = 10;
+    light.shadow.camera.left = -10;
+    light.shadow.camera.bottom = -10;
+    light.shadow.camera.right = 10;
+    light.shadow.camera.top = 10;
 
     return light;
 }
 
-function getAmbientLight(intensity) {
-    var light = new THREE.DirectionalLight('rgb(10, 30, 50)', intensity);
-
-    return light;
-}
-
-function update(renderer, scene, camera, controls) {
+function update(renderer, scene, camera, controls, clock) {
     renderer.render(
         scene,
         camera
@@ -171,8 +162,15 @@ function update(renderer, scene, camera, controls) {
 
     controls.update();
 
+    var timeElapsed = clock.getElapsedTime();
+
+    var boxGrid = scene.getObjectByName('boxGrid')
+    boxGrid.children.forEach(function (child, index) {
+        child.scale.y = (Math.sin(timeElapsed * 5 + index) + 1) / 2 + 0.001 ;
+        child.position.y = child.scale.y/2;
+    })
     requestAnimationFrame(function() {
-        update(renderer, scene, camera, controls);
+        update(renderer, scene, camera, controls, clock);
     })
 }
 
